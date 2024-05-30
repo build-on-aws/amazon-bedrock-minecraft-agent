@@ -48,7 +48,7 @@ Steps to deploy:
 - Deploy the CDK project from `cdk/` using context variables `agentId` and `agentAliasId`, e.g.:
 
 ```
-> cdk deploy --conetxt agentAliasID=ABC123 --context agentID=XYZ321
+> cdk deploy --context agentAliasID=ABC123 --context agentID=XYZ321
 ```
 
 Usage:
@@ -65,11 +65,11 @@ Usage:
 
 ## Mineflayer Library
 
-The Minelayer library is a powerful tool for building Minecraft agents and automating tasks within the game world. It provides a set of classes and functions that abstract away low-level details, making it easier to develop complex behaviors and interactions.
+The Mineflayer library is a powerful tool for building Minecraft agents and automating tasks within the game world. It provides a set of classes and functions that abstract away low-level details, making it easier to develop complex behaviors and interactions.
 
 ## Disclaimers
 
-This project is a proof of concept and is not intended for production use. It is provided as an example of how to build return control agents using the Agents for Amazon Bedrock framework and the Minelayer library.
+This project is a proof of concept and is not intended for production use. It is provided as an example of how to build return control agents using the Agents for Amazon Bedrock framework and the Mineflayer library.
 
 ## Security
 
