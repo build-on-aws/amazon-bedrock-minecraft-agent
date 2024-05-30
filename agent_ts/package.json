@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-bedrock-agent": "^3.574.0",
+    "@aws-sdk/client-bedrock-agent-runtime": "^3.574.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.577.0",
+    "@types/node": "^20.12.11",
+    "dotenv": "^16.4.5",
+    "mineflayer": "^4.20.1",
+    "mineflayer-collectblock": "^1.4.1",
+    "mineflayer-pathfinder": "^2.4.5",
+    "prismarine-item": "^1.14.0",
+    "prismarine-viewer": "^1.28.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  },
+  "scripts": {
+    "start:dev": "nodemon",
+    "build": "tsc"
+  }
+}

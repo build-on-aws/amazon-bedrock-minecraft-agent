@@ -1,0 +1,209 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create a Agent for Amazon Bedrock using Return Control
+
+Parameters:
+  FoundationModel:
+    Type: String
+    Description: Foundation model used by the agent
+    Default: "anthropic.claude-3-haiku-20240307-v1:0"
+  AgentName:
+    Type: String
+    Description: The name of the agent
+    Default: "MinecraftAgent"
+
+Resources:
+  # The Agent for Amazon Bedrock
+  BedrockAgent:
+    Type: AWS::Bedrock::Agent
+    Properties:
+
+      ActionGroups: 
+        # In order for the agent to be able to request the user for additional information when trying to 
+        # complete a task, you must specifiy an action group with a ParentActionGroupSignature of AMAZON.UserInput
+        - ActionGroupName: UserInputAction
+          ParentActionGroupSignature: AMAZON.UserInput
+            
+        # This action group defines the 'tools' that the agent can access.
+        - ActionGroupName: MinecraftActions
+          ActionGroupState: ENABLED
+          ActionGroupExecutor:
+            CustomControl: "RETURN_CONTROL"
+          FunctionSchema:
+            Functions:
+
+              - Description: Jump your character.
+                Name: action_jump
+                Parameters: {}
+
+              - Description: Digs a hole at your current location. In the spirit of the game
+                  you may define your own parameters for the hole.  For example if the user
+                  asks for a small hole you could dig a 1x1 hole, if the user asks for a large
+                  hole you could make a 10x10 hole. Use your judgment based on the conversation
+                  so far.
+                Name: action_dig
+                Parameters:
+                  depth:
+                    Description: How deep the hole should be.
+                    Required: true
+                    Type: number
+                  width:
+                    Description: How wide the hole should be.
+                    Required: true
+                    Type: number
+
+              - Description: Find out if it is raining in the game.
+                Name: action_is_raining
+                Parameters: {}
+
+              - Description: Gets the location of a named player in the game.
+                Name: action_get_player_location
+                Parameters:
+                  player_name:
+                    Description: The name of the player as determined by '[player_name] says:'
+                      in the chat.
+                    Required: true
+                    Type: string
+
+              - Description: Move by walking to a given location in the game.
+                Name: action_move_to_location
+                Parameters:
+                  location_x:
+                    Description: X coordinate in the game.
+                    Required: true
+                    Type: number
+                  location_y:
+                    Description: Y coordinate in the game.
+                    Required: true
+                    Type: number
+                  location_z:
+                    Description: Z coordinate in the game.
+                    Required: true
+                    Type: number
+
+              - Description: Collect or harvest a block type
+                Name: action_collect_block
+                Parameters:
+                  block_type:
+                    Description: The type of block to collect.
+                    Required: true
+                    Type: string
+                  count:
+                    Description: The number of blocks to try and collect.
+                    Required: true
+                    Type: number
+
+              - Description: Find the location of the nearest entity of a type. For example find 'cow' or 'pig' or 'sheep' etc, but this could also be a type of block. 
+                Name: action_find_entity
+                Parameters:
+                  entity_name:
+                    Description: The name of the entity to find.
+                    Required: true
+                    Type: string
+
+              - Description: Attacks a nearest entity. For example find 'cow' or 'pig' or 'sheep' etc. 
+                Name: action_attack_nearest_entity
+                Parameters:
+                  entity_name:
+                    Description: The name of the entity to find.
+                    Required: true
+                    Type: string
+
+        - ActionGroupName: MinecraftExperimental
+          ActionGroupState: ENABLED
+          ActionGroupExecutor:
+            CustomControl: "RETURN_CONTROL"
+          FunctionSchema:
+            Functions:
+
+              - Description: Builds a structure in Minecraft from a provided description, such as 'small house', or 'pen for animals'. 
+                Name: action_build
+                Parameters:
+                  structure_description:
+                    Description: Description of the structure to build.
+                    Required: true
+                    Type: string
+
+        # - ActionGroupName: MinecraftExtras
+        #   ActionGroupState: ENABLED
+        #   ActionGroupExecutor:
+        #     CustomControl: "RETURN_CONTROL"
+        #   FunctionSchema:
+        #     Functions:
+        #       - Description: Returns the current time from the game server.
+        #         Name: action_get_time
+        #         Parameters: {}
+        #       - Description: 'Calculates the distance between two points in 3d space. MUST be
+        #           provided with two valid JSON lists, one for each location in the format of
+        #           [x,y,z] where x y and z are the floating point values for the coordinates
+        #           of the each entity. '
+        #         Name: action_get_distance_between_to_entities
+        #         Parameters:
+        #           location_1:
+        #             Description: Location of entity 1 as JSON string [x,y,z]
+        #             Required: true
+        #             Type: string
+        #           location_2:
+        #             Description: Location of entity 2 as JSON string [x,y,z]
+        #             Required: true
+        #             Type: string
+
+
+      AgentName: !Ref AgentName
+      AgentResourceRoleArn: !GetAtt BedrockAgentRole.Arn
+      AutoPrepare: false
+      FoundationModel: !Ref FoundationModel
+      IdleSessionTTLInSeconds: 1800
+      Instruction: >
+        You are a playful, friendly and creative Minecraft agent named 'Rocky'. Your goal is to entertain players and collaborate with them for a fun gaming experience. You can control your in-game character using provided tools, and your responses will be sent to the in-game chat for other players to read.
+        Guidelines:
+        - Avoid offering to wait or count during games like hide-and-seek. Instead, say, "Let me know when you're ready."
+        - During hide-and-seek, utilize your tools effectively to find players. Do not pretend to have limited abilities.
+        - You MUST only speak in the first person, you must not speak in third person.
+        - Keep your responses short! Try to keep within 10 words.
+        - Within the game, using tnt and making explosions is allowed, as it's fun.
+
+  BedrockAgentAlias:
+    Type: AWS::Bedrock::AgentAlias
+    Properties:
+      AgentAliasName: "AgentAlias"
+      AgentId: !GetAtt BedrockAgent.AgentId
+      Description: Created by CFN
+
+
+  # An IAM role specifying the permissions provided to the agent.
+  BedrockAgentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      # The role must have the prefix of `AmazonBedrockExecutionRoleForAgents_`
+      RoleName: !Sub "AmazonBedrockExecutionRoleForAgents_${AgentName}"
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - bedrock.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: BedrockAgentPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - bedrock:InvokeModel
+                Resource: 
+                  !Sub "arn:aws:bedrock:${AWS::Region}::foundation-model/${FoundationModel}"
+
+
+  
+
+Outputs:
+  agentId:
+    Description: The id of the agent
+    Value: !GetAtt BedrockAgent.AgentId
+
+  agentAliasId:
+    Description: The agent alias id
+    Value: !GetAtt BedrockAgentAlias.AgentAliasId
