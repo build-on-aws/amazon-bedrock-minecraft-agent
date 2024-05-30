@@ -37,7 +37,7 @@ Usage:
 - Run the TypeScript code in `agent_ts/` with `npm run start:dev`
 - Interact with Rocky in game by using the in game chat, pressing `t`.  Try "hello", "come to me" and "dig a 2 by 2 hole".  Watch the debug output in the terminal you are running from. 
 
-## Installation and Usage - Cloud Hosted (ECS)
+### Installation and Usage - Cloud Hosted (ECS)
 
 This repo also contains a CDK stack that will deploy the agent client code to a task (container) within ECS. **You should only consider using this if you are familiar with the technology and running a Minecraft server.** Review the code carefully and at a minimum note:
 - Security Risks: The Minecraft server deployed is publicly accessible, and since the server does not verify usernames, anyone can join with any username, including ones that are already taken by other players. This can lead to impersonation and griefing.
