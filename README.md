@@ -1,6 +1,6 @@
 # Beta - Amazon Bedrock Minecraft Agent (TypeScript)
 
-    Note: This project is in beta, so expect glitches to be found and improvements to be made! We have released this code now in response to the huge amount of interest in this project.  Thank you and please continue to send your feedback and suggestions.
+> Note: This project is in beta, so expect glitches to be found and improvements to be made! We have released this code now in response to the huge amount of interest in this project.  Thank you and please continue to send your feedback and suggestions.
 
 This project is a Minecraft bot built using the Agents for Amazon Bedrock framework, written in TypeScript. It demonstrates how to create an agent that can interact with the Minecraft world using the Return Control Agents.
 
