@@ -1,6 +1,7 @@
 import { BedrockBot } from './bedrock-bot';
 import { MyFunctionHandler } from './action-handler';
 import { loadConfig } from './config';
+import { v4 as uuidv4 } from 'uuid';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -9,14 +10,6 @@ const mineflayer = require('mineflayer');
 const { pathfinder, Movements, goals: { GoalNear } } = require('mineflayer-pathfinder');
 
 const collectblock = require('mineflayer-collectblock').plugin;
-
-function generateUuid(): string {
-  // Generate a random hexadecimal string
-  const randomHex = Math.random().toString(16).slice(2);
-  // Construct the UUID pattern
-  const uuid = `${randomHex.slice(0, 8)}-${randomHex.slice(8, 12)}-${randomHex.slice(12, 16)}-${randomHex.slice(16, 20)}-${randomHex.slice(20)}`;
-  return uuid;
-}
 
 let mcBot: any;
 let mcData: any;
@@ -45,15 +38,14 @@ async function startBot() {
     bedrockBot.setChatCallback(handleChatMessage);
 
     // Set the session ID to a random GUID
-    const uuid = generateUuid;
-    bedrockBot.setSessionId(uuid());
+    bedrockBot.setSessionId(uuidv4());
 
     mcBot.once('spawn', initializeBot);
     mcBot.on('chat', handleChatCommands);
-} catch (error) {
-  console.error('Error starting the bot:', error);
-  // Handle the error appropriately
-}
+  } catch (error) {
+    console.error('Error starting the bot:', error);
+    // Handle the error appropriately
+  }
 }
 
 startBot();
@@ -121,8 +113,7 @@ async function handleChatCommands(username: string, message: string) {
   switch (message) {
 
     case 'reset':
-      const uuid = generateUuid;
-      bedrockBot.setSessionId(uuid());
+      bedrockBot.setSessionId(uuidv4());
       mcBot.chat('Session reset');
       break;
 
